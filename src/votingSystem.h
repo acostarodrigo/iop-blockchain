@@ -763,13 +763,27 @@ public:
 							if (opreturn.substr(8, 64).compare(this->genesisTxHash.ToString()) == 0){
 								// we get the YES Votes
 								if (opreturn.substr(6, 2).compare("01") == 0  && includePositive){
-									votes[0] = votes[0] + amount;
+									// according to CC 1.1 version, positive votes must be at least 100 IoPs
+									if (this->version.compare("0101") == 0){
+										if (amount >= COIN * 100)
+											votes[0] = votes[0] + amount;
+										else
+											votes[0] = votes[0] + 0;
+									} else
+										votes[0] = votes[0] + amount;
 									return true;
 								}
 
 								// we get the NO votes
 								if (opreturn.substr(6, 2).compare("00") == 0){
-									votes[1] = votes[1] + amount * 5; //negative votes weight x5
+									// according to CC 1.1 version, negative votes must be at least 20 IoPs
+									if (this->version.compare("0101") == 0){
+										if (amount >= COIN * 20)
+											votes[1] = votes[1] + amount * 5; //negative votes weight x5
+										else
+											votes[1] = votes[1] + 0;
+									} else
+										votes[1] = votes[1] + amount * 5; //negative votes weight x5
 									return true;
 								}
 
