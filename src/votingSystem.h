@@ -356,6 +356,15 @@ public:
 
 	// gets true if the contract is valid in all the rules.
 		bool isValid(){
+
+			// Version 1.1 checks
+			if (isCCVersion11){
+				// valid version is 11
+				if (this->version.compare("0101") != 0){
+					LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);
+					return false;
+				}
+			}
 			// valid version is 10
 			if (this->version.compare("0100") != 0){
 				LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);

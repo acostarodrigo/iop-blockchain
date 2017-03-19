@@ -168,6 +168,9 @@ extern bool fReindex;
 extern int nScriptCheckThreads;
 extern bool fTxIndex;
 extern bool fIsBareMultisigStd;
+
+extern bool isCCVersion11; // determines if Contribution Contracts are version 1.1 or not.
+
 extern bool fRequireStandard;
 extern bool fCheckBlockIndex;
 extern bool fCheckpointsEnabled;

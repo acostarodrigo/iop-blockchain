@@ -90,8 +90,11 @@ bool fPruneMode = false;
 bool fIsBareMultisigStd = DEFAULT_PERMIT_BAREMULTISIG;
 bool fRequireStandard = true;
 bool fCheckBlockIndex = false;
+/* Determines if Contribution Contracts is activated in version 1.1 */
+bool isCCVersion11 = false;
 /* IoP beta release - flag that determines if the Miner white list functionality is activated or not. */
 bool fIsMinerWhiteList = false;
+
 bool fCheckpointsEnabled = DEFAULT_CHECKPOINTS_ENABLED;
 size_t nCoinCacheUsage = 5000 * 300;
 uint64_t nPruneTarget = 0;
@@ -2576,6 +2579,14 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
     }
 
+    // Contribution Contracts upgraded to version 1.1
+	if (block.nVersion >= 5 && IsSuperMajority(5, pindex->pprev, chainparams.GetConsensus().nMajorityEnforceBlockUpgrade, chainparams.GetConsensus())){
+		isCCVersion11 = true;
+		LogPrint("MinersWhiteList", "block version 5.\n");
+	} else{
+		isCCVersion11 = false;
+		LogPrint("MinersWhiteList", "block version not 5. %s\n",block.nVersion);
+	}
     // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY) using versionbits logic.
     int nLockTimeFlags = 0;
     if (VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_CSV, versionbitscache) == THRESHOLD_ACTIVE) {
@@ -2587,6 +2598,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (IsWitnessEnabled(pindex->pprev, chainparams.GetConsensus())) {
         flags |= SCRIPT_VERIFY_WITNESS;
     }
+
 
     int64_t nTime2 = GetTimeMicros(); nTimeForks += nTime2 - nTime1;
     
