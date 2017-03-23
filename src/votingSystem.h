@@ -75,6 +75,7 @@ public:
 	uint256 genesisTxHash;
 	std::vector<CAmount> votes;
 	std::string opReturn;
+	int voteYesCount;
 
 	// possible ContributionContract states
 	enum CCState {
@@ -715,7 +716,8 @@ public:
 						if (i <= this->blockStart + this->genesisBlockHeight)
 							getVote(tx, votes, true); // if the CC is not yet active, then count positive votes
 						else
-							getVote(tx, votes, false);
+							if (i <= this->blockStart + this->genesisBlockHeight + Params().GetConsensus().ccBlockStartAdditionalHeight)
+								getVote(tx, votes, false);
 					}
 				}
 
