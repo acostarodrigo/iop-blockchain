@@ -610,6 +610,12 @@ public:
 				return false;
 			}
 
+			// in rule of CC 1.1, we required a maximun of 5 different positive transaction votes
+			if (this->activeVoteYesCount < 5 && this->version.compare("1010") == 0){
+				LogPrint("Inactive Contract", "Not enought positive voting transactions for this contract. %s is not active. Only %s voteYes transaction\n", this->genesisTxHash.ToString(), this->activeVoteYesCount);
+				return false;
+			}
+
 
 			// 1000 IoPs that where used to create the CC must still be locked, which means that there must
 			// not be another transaction that uses that input in the Active period.
