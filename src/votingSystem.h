@@ -359,104 +359,125 @@ public:
 				return cc;
 	}
 
-	// gets true if the contract is valid in all the rules.
-		bool isValid(){
-
-			// Version 1.1 checks
-			if (isCCVersion11){
-				// valid version is 11
-				if (this->version.compare("0101") != 0){
-					LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);
-					return false;
-				}
+	/**
+	 * Determines if a contract detected in a new block is valid or not. It performs different validations depending on active contract version.
+	 * If Version 1.1 contracts are active, we only validate those new rules.
+	 */
+	bool isValid(){
+		// New Contribution Contract version 1.1 rules
+		if (isCCVersion11()){
+			// valid version is 11, so we don't accept older contracts.
+			if (this->version.compare("0101") != 0){
+				LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);
+				return false;
 			}
+
+			// Contract must include "CC fees" that send 1 IoP to the burn address.
+			// Output 0: is the freeze output with 1000 IoPs.
+			// Output 1: is the "CC Fee" output, that burns 1 IoP
+			// Output 1+n: are use for change...normally shouldn't been more than 1
+			// Output OP_Return: can be any position after 0 and 1, and include the Contribution Contract.
+			// Outputs after op_return are for beneficiaries.
+			if (this->genesisTx.vout[1].nValue < 1 * COIN){
+				LogPrint("Invalid Contract", "CC Fee is not included. Output[1] must burn 1 IoP. Contract version: %s\n", this->version);
+				return false;
+			}
+
+			// Incluir validacion de address
+
+		}
+
+		// if we are still running contract of version 1.0, they must be valid.
+		if (!isCCVersion11()){
 			// valid version is 10
 			if (this->version.compare("0100") != 0){
 				LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);
 				return false;
 			}
-
-			// we validate that this transaction freezes at least 1000 IoP
-			if (this->genesisTx.vout[0].nValue < COIN * 1000){
-				LogPrint("Invalid Contract", "Genesis transaction doesn't freeze 1000 IoPs\n");
-				return false;
-			}
-
-
-			// can't pay more than 0.1 IoP
-			if (this->blockReward > 10000000){ //COIN * 0.1
-				LogPrint("Invalid Contract", "Contract reward is too high: %s\n", this->blockReward);
-				return false;
-			}
-
-
-			// Block start is defined as current Height + 1000 + n, and can't be more than 6 months, or 11960 blocks.
-			if (this->blockStart > 11960 || this->blockStart <= 0){
-				LogPrint("Invalid Contract", "Invalid contract start block: %s\n", this->blockStart);
-				return false;
-			}
-
-
-			// block end is defined as the amount of blocks that this contract will be executed and the reward included in.
-			// Max Value is 120960 blocks-
-			if (this->blockEnd > 120960 || this->blockEnd <= 0 ){
-				LogPrint("Invalid Contract", "Invalid contract end block: %s\n", this->blockEnd);
-				return false;
-			}
-
-
-			// sum of beneficiaries amount, must be equal to block reward.
-			CAmount totalAmount = 0;
-			BOOST_FOREACH(CCBeneficiary beneficiary, this->beneficiaries){
-				totalAmount = totalAmount + beneficiary.getAmount();
-			}
-			if (totalAmount != this->blockReward){
-				LogPrint("Invalid Contract", "Contract pays too much to beneficiaries: %s\n", totalAmount);
-				return false;
-			}
-
-			// at this point the Contribution contract is valid.
-			return true;
-
 		}
 
-		static bool getContributionContracts(int currentHeight, std::vector<ContributionContract>& ccOut){
-				std::vector<std::string> ccPointers;
-				ccPointers = loadCCPointers();
+		// ************************* These are all common rules for all version *************************** //
 
-				bool found = false;
+		// we validate that this transaction freezes at least 1000 IoP
+		if (this->genesisTx.vout[0].nValue < COIN * 1000){
+			LogPrint("Invalid Contract", "Genesis transaction doesn't freeze 1000 IoPs\n");
+			return false;
+		}
 
-				for (auto i : ccPointers){
-					std::vector<std::string> strs;
-					boost::split(strs, i, boost::is_any_of(","));
+		// can't pay more than 0.1 IoP
+		if (this->blockReward > 10000000){ //COIN * 0.1
+			LogPrint("Invalid Contract", "Contract reward is too high: %s\n", this->blockReward);
+			return false;
+		}
 
-					int ccBlockHeight = atoi(strs[0]);
-					if ( ccBlockHeight<= currentHeight){
-						CTransaction ccGenesisTx;
-						ccGenesisTx = loadCCGenesisTransaction(atoi(strs[0]), uint256S(strs[1]));
-						if (ccGenesisTx.vin.size() > 0){
-							BOOST_FOREACH(const CTxOut& out, ccGenesisTx.vout) {
-								if (isContributionContract(out.scriptPubKey)){
-									ContributionContract cc = ContributionContract();
-									if (getContributionContract(ccGenesisTx, cc)){
-										cc.genesisBlockHeight = atoi(strs[0]); //I set the block height
-										if (cc.isValid()){
-												cc.votes = cc.getCCVotes(currentHeight);
-												cc.blockPending = cc.getPendingBlocks(currentHeight);
-												cc.state = cc.getCCState(currentHeight);
 
-												found = true;
-												ccOut.push_back(cc);
-										}
+		// Block start is defined as current Height + 1000 + n, and can't be more than 6 months, or 11960 blocks.
+		if (this->blockStart > 11960 || this->blockStart <= 0){
+			LogPrint("Invalid Contract", "Invalid contract start block: %s\n", this->blockStart);
+			return false;
+		}
+
+
+		// block end is defined as the amount of blocks that this contract will be executed and the reward included in.
+		// Max Value is 120960 blocks-
+		if (this->blockEnd > 120960 || this->blockEnd <= 0 ){
+			LogPrint("Invalid Contract", "Invalid contract end block: %s\n", this->blockEnd);
+			return false;
+		}
+
+
+		// sum of beneficiaries amount, must be equal to block reward.
+		CAmount totalAmount = 0;
+		BOOST_FOREACH(CCBeneficiary beneficiary, this->beneficiaries){
+			totalAmount = totalAmount + beneficiary.getAmount();
+		}
+		if (totalAmount != this->blockReward){
+			LogPrint("Invalid Contract", "Contract pays too much to beneficiaries: %s\n", totalAmount);
+			return false;
+		}
+
+		// at this point the Contribution contract is valid.
+		return true;
+
+	}
+
+	static bool getContributionContracts(int currentHeight, std::vector<ContributionContract>& ccOut){
+			std::vector<std::string> ccPointers;
+			ccPointers = loadCCPointers();
+
+			bool found = false;
+
+			for (auto i : ccPointers){
+				std::vector<std::string> strs;
+				boost::split(strs, i, boost::is_any_of(","));
+
+				int ccBlockHeight = atoi(strs[0]);
+				if ( ccBlockHeight<= currentHeight){
+					CTransaction ccGenesisTx;
+					ccGenesisTx = loadCCGenesisTransaction(atoi(strs[0]), uint256S(strs[1]));
+					if (ccGenesisTx.vin.size() > 0){
+						BOOST_FOREACH(const CTxOut& out, ccGenesisTx.vout) {
+							if (isContributionContract(out.scriptPubKey)){
+								ContributionContract cc = ContributionContract();
+								if (getContributionContract(ccGenesisTx, cc)){
+									cc.genesisBlockHeight = atoi(strs[0]); //I set the block height
+									if (cc.isValid()){
+											cc.votes = cc.getCCVotes(currentHeight);
+											cc.blockPending = cc.getPendingBlocks(currentHeight);
+											cc.state = cc.getCCState(currentHeight);
+
+											found = true;
+											ccOut.push_back(cc);
 									}
 								}
 							}
 						}
 					}
 				}
-
-				return found;
 			}
+
+			return found;
+		}
 
 		static bool getContributionContractsByHeight(int startHeight,int currentHeight, std::vector<ContributionContract>& ccOut){
 						std::vector<std::string> ccPointers;
@@ -625,8 +646,6 @@ public:
 				}
 
 			}
-
-
 
 			// 1000 IoPs that where used to create the CC must still be locked, which means that there must
 			// not be another transaction that uses that input in the Active period.
