@@ -8,6 +8,7 @@
 #ifndef VOTINGSYSTEM_H_
 #define VOTINGSYSTEM_H_
 
+#include "amount.h"
 #include "utilstrencodings.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
@@ -75,7 +76,8 @@ public:
 	uint256 genesisTxHash;
 	std::vector<CAmount> votes;
 	std::string opReturn;
-	int voteYesCount;
+	int totalVoteYesCount;
+	int activeVoteYesCount;
 
 	// possible ContributionContract states
 	enum CCState {
@@ -104,6 +106,8 @@ public:
 		this->state = UNKNOWN;
 		this->blockReward = 0;
 		this->opReturn = "";
+		this->totalVoteYesCount = 0;
+		this->activeVoteYesCount = 0;
 	}
 
 	static std::string getState(CCState state){
@@ -621,14 +625,12 @@ public:
 				return false;
 			}
 
-
 			// must have pending blocks to be included in
 			this->blockPending = getPendingBlocks(currentHeight);
 
 			if (this->blockPending == 0){
 				return false;
 			}
-
 
 			// The amount of YES votes must be greater than NO votes.
 			// I need to search all the Votes transaction since the genesis block.
@@ -778,52 +780,73 @@ public:
 			std::string opreturn = HexStr(value);
 
 			// We have the op_return data, we are only continuing if basic structure is correct.
-			if (opreturn.size() == 72 && opreturn.substr(0, 6).compare("564f54") == 0){
-				// vote power must be locked, meaning the output must in an utxo
-				UniValue utxo(UniValue::VOBJ);
-				UniValue ret(UniValue::VOBJ);
-				utxo.push_back(Pair("tx", tx.GetHash().ToString()));
-				utxo.push_back(Pair("n", 0));
-				ret = gettxout(utxo, false);
-				// if I didn't get a result, then no utxo and the locked coins of the Vote transaction are already spent.
-				if (ret.isNull())
+			if (opreturn.size() != 72 && opreturn.substr(0, 6).compare("564f54") != 0)
+				return false;
+
+			//referenced transaction must be the same as Contribution Contract genesis hash
+			if (opreturn.substr(8, 64).compare(this->genesisTxHash.ToString()) != 0)
+				return false;
+
+			// vote power must be locked, meaning the output must in an utxo
+			UniValue utxo(UniValue::VOBJ);
+			UniValue ret(UniValue::VOBJ);
+			utxo.push_back(Pair("tx", tx.GetHash().ToString()));
+			utxo.push_back(Pair("n", 0));
+			ret = gettxout(utxo, false);
+
+			// if I didn't get a result, then no utxo and the locked coins of the Vote transaction are already spent.
+			if (ret.isNull())
+				isUtxo = false;
+			else
+				isUtxo = true;
+
+			// For CC version 1.1, we are forcing the voter to send the "voting fee" of 1% of the voting power to a vanity address.
+			// At this point, we can validate that to consider this transaction valid.
+			if (this->version.compare("0101") == 0){
+				// Output index 1, must be 1% of the vote power.
+				if (tx.vout[1].nValue < (amount / 100))
 					return false;
 
-				//referenced transaction must be the same as genesis hash
-				if (opreturn.substr(8, 64).compare(this->genesisTxHash.ToString()) == 0){
-					// we get the YES Votes
-					if (opreturn.substr(6, 2).compare("01") == 0  && includePositive){
-						// according to CC 1.1 version, positive votes must be at least 100 IoPs
-						if (this->version.compare("0101") == 0){
-							if (amount >= COIN * 100)
-								votes[0] = votes[0] + amount;
-							else
-								votes[0] = votes[0] + 0;
-						} else
-							votes[0] = votes[0] + amount;
-						return true;
-					}
-
-					// we get the NO votes
-					if (opreturn.substr(6, 2).compare("00") == 0){
-						// according to CC 1.1 version, negative votes must be at least 20 IoPs
-						if (this->version.compare("0101") == 0){
-							if (amount >= COIN * 20)
-								votes[1] = votes[1] + amount * 5; //negative votes weight x5
-							else
-								votes[1] = votes[1] + 0;
-						} else
-							votes[1] = votes[1] + amount * 5; //negative votes weight x5
-						return true;
-					}
-
-
-				}
-
-
+				//logica para obtener el address y compararla con el vanity address
 			}
 
+			// we focues on VoteYes now
+			if (opreturn.substr(6, 2).compare("01") == 0  && includePositive){
+				// we validate version CC 1.1 specific rules
+				if (this->version.compare("0101") == 0){
+					// To vote positive, you must freeze at least 100 IoP
+					if (amount < (100 * COIN))
+						return false;
+				}
 
+				// the voteYes is valid at this point, it may be active or not. So we already increase the total vote counter.
+				++this->totalVoteYesCount;
+
+				// if the voting transaction is still an utxo, we increase the voting counter successfully.
+				if (isUtxo){
+					votes[0] = votes[0] + amount;
+					++this->activeVoteYesCount;
+					return true;
+				}
+			}
+
+			// we focus on the voteNO now.
+			if (opreturn.substr(6, 2).compare("00") == 0){
+				// if the VoteNo was withdrawn, we can ignore it.
+				if (!isUtxo)
+					return false;
+
+				// we focus in all CC 1.1 version
+				if (this->version.compare("0101") == 0){
+					// voting holder must freeze 20 IoPS
+					if (amount < COIN * 20)
+						return false;
+				}
+
+				votes[1] = votes[1] + amount * 5; //negative votes weight x5
+				return true;
+			}
+			// in case the transaction is either VoteYes or VoteNo, we ignore it.
 			return false;
 		}
 
