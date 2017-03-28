@@ -735,69 +735,114 @@ public:
 			// first output is vote power
 			CAmount amount = tx.vout[0].nValue;
 
-			// transaction must have an op_return type output
-			BOOST_FOREACH(CTxOut output, tx.vout){
-				if (output.scriptPubKey[0] == OP_RETURN){
-					CScript::const_iterator pc = output.scriptPubKey.begin();
-					opcodetype opcode;
-					std::vector<unsigned char> value;
-
-					while (pc < output.scriptPubKey.end()){
-						output.scriptPubKey.GetOp(pc, opcode, value);
-					}
-
-					std::string opreturn = HexStr(value);
-					if (opreturn.size() == 72){ //string must be 36 bytes long
-						// text in op_return output must be 0x564f54
-						if (opreturn.substr(0, 6).compare("564f54") == 0){
-
-							// vote power must be locked, meaning the output must in an utxo
-							UniValue utxo(UniValue::VOBJ);
-							UniValue ret(UniValue::VOBJ);
-							utxo.push_back(Pair("tx", tx.GetHash().ToString()));
-							utxo.push_back(Pair("n", 0));
-							ret = gettxout(utxo, false);
-							// if I didn't get a result, then no utxo and the locked coins of the Vote transaction are already spent.
-							if (ret.isNull())
-								return false;
-
-							//referenced transaction must be the same as genesis hash
-							if (opreturn.substr(8, 64).compare(this->genesisTxHash.ToString()) == 0){
-								// we get the YES Votes
-								if (opreturn.substr(6, 2).compare("01") == 0  && includePositive){
-									// according to CC 1.1 version, positive votes must be at least 100 IoPs
-									if (this->version.compare("0101") == 0){
-										if (amount >= COIN * 100)
-											votes[0] = votes[0] + amount;
-										else
-											votes[0] = votes[0] + 0;
-									} else
-										votes[0] = votes[0] + amount;
-									return true;
-								}
-
-								// we get the NO votes
-								if (opreturn.substr(6, 2).compare("00") == 0){
-									// according to CC 1.1 version, negative votes must be at least 20 IoPs
-									if (this->version.compare("0101") == 0){
-										if (amount >= COIN * 20)
-											votes[1] = votes[1] + amount * 5; //negative votes weight x5
-										else
-											votes[1] = votes[1] + 0;
-									} else
-										votes[1] = votes[1] + amount * 5; //negative votes weight x5
-									return true;
-								}
-
-
-							}
-
-						}
-					}
-				}
+			// new rule on version 1.1. "Fee" must go to a trash address, so we need at least three outputs for a voting transaction.
+			// output 0: freeze output of 100 or 25 IoPs
+			// putput 1: "fee" output to trash address
+			// output 2: op_return
+			if (this->version.compare("1010") == 0){
+				if (tx.vout.size() < 3)
+					return false;
+			} else{
+			// In version 1.0, fee must be at least 1% of the vote power.
+				CAmount fee = getVoteFee(tx);
+				if (fee < amount / 100)
+					return false;
 			}
 
+
+			// boolean used to store if the voting transaction is utxo or not.
+			// We are including non utxo transactions into the count because CC 1.1 introduces the need to invalidate a contract
+			// after 50% of the positive votes have been withdrawn. By calculating non utxo transactions, we can find out the total number of votes
+			// and how many votes are still active.
+			bool isUtxo = false;
+
+			// will get the op_return data. Depending on the contract version, output will be index 1 or 2
+			CTxOut output;
+			if (this->version.compare("1000")== 0)
+				output = tx.vout[0];
+			else
+				output = tx.vout[1];
+
+			// we didn't get the op_Return output so this is not a valid voting transaction
+			if (output.scriptPubKey[0] != OP_RETURN)
+				return false;
+
+			// Now we are going to parse the op_return data
+			CScript::const_iterator pc = output.scriptPubKey.begin();
+			opcodetype opcode;
+			std::vector<unsigned char> value;
+
+			while (pc < output.scriptPubKey.end()){
+				output.scriptPubKey.GetOp(pc, opcode, value);
+			}
+			std::string opreturn = HexStr(value);
+
+			// We have the op_return data, we are only continuing if basic structure is correct.
+			if (opreturn.size() == 72 && opreturn.substr(0, 6).compare("564f54") == 0){
+				// vote power must be locked, meaning the output must in an utxo
+				UniValue utxo(UniValue::VOBJ);
+				UniValue ret(UniValue::VOBJ);
+				utxo.push_back(Pair("tx", tx.GetHash().ToString()));
+				utxo.push_back(Pair("n", 0));
+				ret = gettxout(utxo, false);
+				// if I didn't get a result, then no utxo and the locked coins of the Vote transaction are already spent.
+				if (ret.isNull())
+					return false;
+
+				//referenced transaction must be the same as genesis hash
+				if (opreturn.substr(8, 64).compare(this->genesisTxHash.ToString()) == 0){
+					// we get the YES Votes
+					if (opreturn.substr(6, 2).compare("01") == 0  && includePositive){
+						// according to CC 1.1 version, positive votes must be at least 100 IoPs
+						if (this->version.compare("0101") == 0){
+							if (amount >= COIN * 100)
+								votes[0] = votes[0] + amount;
+							else
+								votes[0] = votes[0] + 0;
+						} else
+							votes[0] = votes[0] + amount;
+						return true;
+					}
+
+					// we get the NO votes
+					if (opreturn.substr(6, 2).compare("00") == 0){
+						// according to CC 1.1 version, negative votes must be at least 20 IoPs
+						if (this->version.compare("0101") == 0){
+							if (amount >= COIN * 20)
+								votes[1] = votes[1] + amount * 5; //negative votes weight x5
+							else
+								votes[1] = votes[1] + 0;
+						} else
+							votes[1] = votes[1] + amount * 5; //negative votes weight x5
+						return true;
+					}
+
+
+				}
+
+
+			}
+
+
 			return false;
+		}
+
+
+
+		/**
+		 * Gets the fee of the Voting Transaction. This is necessary to make sure the voters are complying the rules
+		 * of fee. Current rule for CC 1.0 is 1% fee of the vote power.
+		 */
+		CAmount getVoteFee(const CTransaction voteTransaction){
+			CAmount inputsAmount = 0 * COIN;
+			// loop vote transaction inputs and search for outpoints transactions in the mempool.
+			for (unsigned int i = 0; i < voteTransaction.vin.size(); i++) {
+				std::shared_ptr<const CTransaction> ptx = mempool.get(voteTransaction.vin[i].prevout.hash);
+				CTransaction inputTransaction = *ptx;
+				inputsAmount = inputsAmount + inputTransaction.GetValueOut();
+			}
+
+			return inputsAmount;
 		}
 
 
