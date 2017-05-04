@@ -365,7 +365,7 @@ public:
 	 */
 	bool isValid(){
 		// New Contribution Contract version 1.1 rules
-		if (isCCVersion11()){
+		if (isCCVersion11){
 			// valid version is 11, so we don't accept older contracts.
 			if (this->version.compare("0101") != 0){
 				LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);
@@ -388,7 +388,7 @@ public:
 		}
 
 		// if we are still running contract of version 1.0, they must be valid.
-		if (!isCCVersion11()){
+		if (!isCCVersion11){
 			// valid version is 10
 			if (this->version.compare("0100") != 0){
 				LogPrint("Invalid Contract", "Invalid version: %s\n", this->version);
