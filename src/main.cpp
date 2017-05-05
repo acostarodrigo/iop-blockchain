@@ -2582,10 +2582,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     // Contribution Contracts upgraded to version 1.1
 	if (block.nVersion >= 5 && IsSuperMajority(5, pindex->pprev, chainparams.GetConsensus().nMajorityEnforceBlockUpgrade, chainparams.GetConsensus())){
 		isCCVersion11 = true;
-		LogPrint("MinersWhiteList", "block version 5.\n");
+		LogPrint("MinersWhiteList", "Contribution Contracts: block version 5.\n");
 	} else{
 		isCCVersion11 = false;
-		LogPrint("MinersWhiteList", "block version not 5. %s\n",block.nVersion);
+		LogPrint("MinersWhiteList", "Contribution Contracts: block version not 5. %s\n",block.nVersion);
 	}
     // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY) using versionbits logic.
     int nLockTimeFlags = 0;
