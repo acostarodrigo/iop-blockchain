@@ -20,6 +20,10 @@ typedef std::vector<std::string> minerwhitelist_v;
 class CMinerWhiteList {
 private:
 	boost::filesystem::path pathMinerWhiteList;
+
+	template<typename Out>
+	void split(const std::string &s, char delim, Out result);
+
 public:
 	// possible actions enum
 	enum WhiteListAction {ADD_MINER, REMOVE_MINER, ENABLE_CAP, DISABLE_CAP, NONE};
@@ -28,6 +32,8 @@ public:
 	bool Write(minerwhitelist_v minerwhitelist);
 	minerwhitelist_v Read();
 	bool Exist(std::string pkey);
+
+	std::vector<std::string> split(const std::string &s, char delim);
 
 	/**
 	 * returns true if the mier whitelist control is active or not.

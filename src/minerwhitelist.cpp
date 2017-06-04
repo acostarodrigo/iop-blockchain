@@ -35,6 +35,31 @@ CMinerWhiteList::CMinerWhiteList() {
 	pathMinerWhiteList = GetDataDir() / "minerwhitelist.dat";
 }
 
+/**
+ * new functionality version 4.1.0
+ * Private function that splits the passed string using the passed character to delimit the string.
+ * Returns a new vector whit all the splits.
+ */
+template<typename Out>
+void split(const std::string &s, char delim, Out result) {
+    std::stringstream ss;
+    ss.str(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+
+/**
+ * new functionality version 4.1.0
+ * public function that returns a string vector of the splited string
+ */
+std::vector<std::string> CMinerWhiteList::split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, std::back_inserter(elems));
+    return elems;
+}
+
 bool CMinerWhiteList::Write(minerwhitelist_v minerwhitelist) {
 	/**
 	 * I'm writting plain text and not locking file or using temp files.
@@ -56,6 +81,7 @@ bool CMinerWhiteList::Write(minerwhitelist_v minerwhitelist) {
 	}
 }
 
+
 minerwhitelist_v CMinerWhiteList::Read() {
 	/**
 	 * I'm reading plain data. My original copy from bitcoin code which added the hash of the current data to
@@ -67,6 +93,12 @@ minerwhitelist_v CMinerWhiteList::Read() {
 
 		std::string pkey;
 		while (file >> pkey) {
+			// new functionality version 4.1.0
+			//if this is an old key witch doesn't inform the number of add and remove transactions involved
+			// (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
+			if (split(pkey,',').size != 3)
+				pkey = pkey + ",1" + ",0";
+
 			pkeys.push_back(pkey);
 		}
 
@@ -85,6 +117,7 @@ minerwhitelist_v CMinerWhiteList::Read() {
 
 	return pkeys;
 }
+
 
 bool CMinerWhiteList::Exist(std::string pkey){
 	std::vector<string> pkeys;
