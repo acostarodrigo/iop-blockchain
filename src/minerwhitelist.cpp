@@ -41,7 +41,7 @@ CMinerWhiteList::CMinerWhiteList() {
  * Returns a new vector whit all the splits.
  */
 template<typename Out>
-void split(const std::string &s, char delim, Out result) {
+void CMinerWhiteList::split(const std::string &s, char delim, Out result) {
     std::stringstream ss;
     ss.str(s);
     std::string item;
@@ -96,7 +96,7 @@ minerwhitelist_v CMinerWhiteList::Read() {
 			// new functionality version 4.1.0
 			//if this is an old key witch doesn't inform the number of add and remove transactions involved
 			// (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
-			if (split(pkey,',').size != 3)
+			if (split(pkey,',').size() != 3)
 				pkey = pkey + ",1" + ",0";
 
 			pkeys.push_back(pkey);
@@ -134,4 +134,21 @@ bool CMinerWhiteList::isEnabled(const int currentHeight){
 		return true;
 	else
 		return false;
+}
+
+// finds in the miner whitelist databases the key with the number of transaction, both Add and Remove types, for the passed Primary key.
+std::string CMinerWhiteList::getTransactions(const std::string &pkey){
+	// ge the list of whitelisted addresses
+	std::vector<std::string> data = Read();
+	std::vector<std::string>::iterator i=data.begin();
+	
+	while(i != data.end()){
+		// if I find a vector with first element is the pkey, then that's what I'm looking for
+		std::string value = i;
+		if (split(value,',').size() != 3)
+			return value;
+	}	
+
+	return "";
+
 }
