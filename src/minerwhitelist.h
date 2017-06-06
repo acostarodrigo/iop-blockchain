@@ -33,7 +33,11 @@ public:
 	minerwhitelist_v Read();
 	bool Exist(std::string pkey);
 
+	//splits the passed string into a vector. Used to split the miner whitelist into [pkey],[#Add],[#Remove] form
 	std::vector<std::string> split(const std::string &s, char delim);
+
+	// finds in the miner whitelist databases the key with the number of transaction, both Add and Remove types, for the passed address
+        std::string getTransactions(const std::string &pkey);
 
 	/**
 	 * returns true if the mier whitelist control is active or not.
