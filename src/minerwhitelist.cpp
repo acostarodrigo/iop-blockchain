@@ -137,18 +137,30 @@ bool CMinerWhiteList::isEnabled(const int currentHeight){
 }
 
 // finds in the miner whitelist databases the key with the number of transaction, both Add and Remove types, for the passed Primary key.
-std::string CMinerWhiteList::getTransactions(const std::string &pkey){
-	// ge the list of whitelisted addresses
-	std::vector<std::string> data = Read();
-	std::vector<std::string>::iterator i=data.begin();
-	
-	while(i != data.end()){
-		// if I find a vector with first element is the pkey, then that's what I'm looking for
-		std::string value = i;
-		if (split(value,',').size() != 3)
-			return value;
-	}	
+std::vector<std::string> CMinerWhiteList::ReadOne(const std::string &minerAddress){    
+	std::vector<std::string> value;
+        try{
+                std::ifstream file(pathMinerWhiteList.string().c_str());
 
-	return "";
+                std::string pkey;
+                while (file >> pkey) {
+                        // new functionality version 4.1.0
+                        //if this is an old key witch doesn't inform the number of add and remove transactions involved
+                        // (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
+                        if (split(pkey,',').size() == 3 )
+                                pkey = pkey + ",1" + ",0";
 
+			value = split(pkey,',');
+                        if (value.at(0).compare(minerAddress) == 0){
+				file.close();
+				return value;
+			}
+                }		
+                file.close();
+		
+        } catch (const std::exception& e){
+                //return error("%s: Serialize or I/O error - %s", __func__, e.what());
+        }
+
+	return value;
 }

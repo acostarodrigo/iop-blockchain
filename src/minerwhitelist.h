@@ -37,7 +37,7 @@ public:
 	std::vector<std::string> split(const std::string &s, char delim);
 
 	// finds in the miner whitelist databases the key with the number of transaction, both Add and Remove types, for the passed address
-        std::string getTransactions(const std::string &pkey);
+        std::vector<std::string> ReadOne(const std::string &minerAddress);
 
 	/**
 	 * returns true if the mier whitelist control is active or not.
