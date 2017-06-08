@@ -2817,17 +2817,38 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 							CIoPAddress address(destinationAddress);
 
 							if (address.IsValid()){
+								// the operation is valid. Lets retrieve information of previous transaction for this address
+								std::vector<std::string> adminConsensus = minerwhitelistdb.ReadOne(address.ToString());	
+
+								// we can't allow an admin to post more than one transaction for this address
+								if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
+									break;
+
 								switch(action)
 								{
 									case CMinerWhiteList::ADD_MINER:
 										vector = minerwhitelistdb.Read();
-										vector.push_back(address.ToString());
+
+										//If this is the first transaction to add it, will generate the structure
+										if (adminConsensus.size() == 0){
+											adminConsensus.push_back(address.ToString());
+											adminConsensus.push_back("1");
+											adminConsensus.push_back("0");
+										} else // if a previous exists, I will increase the counter
+											adminConsensus.at(1) = std::stoi(adminConsensus.at(1)) + 1;
+										// then will track this public key
+										adminConsensus.push_back(pkey);
+
+										//create function that will generate string from vector and add it.
+										vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
+
 										minerwhitelistdb.Write(vector);
 										LogPrint("MinerWhiteListTransaction", "Miner address added: %s \n", address.ToString());
 										break;
 									case CMinerWhiteList::REMOVE_MINER:
 										// will remove the address only if is not the admin.
 										if (!Params().GetConsensus().minerWhiteListAdminAddress.count(address.ToString())){
+											// antes de removerlo, tengo que ver si incremento el voto de remove o directamente lo quito
 											vector = minerwhitelistdb.Read();
 											vector.erase(std::remove(vector.begin(), vector.end(), address.ToString()), vector.end());
 											minerwhitelistdb.Write(vector);
