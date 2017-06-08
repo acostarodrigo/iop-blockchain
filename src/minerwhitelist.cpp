@@ -155,12 +155,26 @@ std::vector<std::string> CMinerWhiteList::ReadOne(const std::string &minerAddres
 				file.close();
 				return value;
 			}
-                }		
+               }
                 file.close();
-		
         } catch (const std::exception& e){
                 //return error("%s: Serialize or I/O error - %s", __func__, e.what());
         }
 
 	return value;
+}
+
+std::string CMinerWhiteList::vectorToString(const std::vector<std::string> &input){
+	std::ostringstream oss;
+
+	  if (!input.empty())
+	  {
+	    // Convert all but the last element to avoid a trailing ","
+	    std::copy(input.begin(), input.end()-1,  std::ostream_iterator<std::string>(oss, ","));
+
+	    // Now add the last element with no delimiter
+	    oss << input.back();
+	  }
+
+	 return oss.str();
 }

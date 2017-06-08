@@ -21,6 +21,7 @@ class CMinerWhiteList {
 private:
 	boost::filesystem::path pathMinerWhiteList;
 
+	// splits a  string into a vector
 	template<typename Out>
 	void split(const std::string &s, char delim, Out result);
 
@@ -38,6 +39,9 @@ public:
 
 	// finds in the miner whitelist databases the key with the number of transaction, both Add and Remove types, for the passed address
         std::vector<std::string> ReadOne(const std::string &minerAddress);
+
+	// converts a string vector into a comma separated string
+	std::string vectorToString(const std::vector<std::string> &input);
 
 	/**
 	 * returns true if the mier whitelist control is active or not.
