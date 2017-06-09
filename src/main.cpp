@@ -2848,9 +2848,18 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 									case CMinerWhiteList::REMOVE_MINER:
 										// will remove the address only if is not the admin.
 										if (!Params().GetConsensus().minerWhiteListAdminAddress.count(address.ToString())){
-											// antes de removerlo, tengo que ver si incremento el voto de remove o directamente lo quito
-											vector = minerwhitelistdb.Read();
-											vector.erase(std::remove(vector.begin(), vector.end(), address.ToString()), vector.end());
+											// if I didn't find a previous entry, then nothing to be done!
+											if (adminConsensus.size() == 0)
+												break;
+											// lets load the list
+											 vector = minerwhitelistdb.Read();
+											 vector.erase(std::remove(vector.begin(), vector.end(), minerwhitelistdb.vectorToString(adminConsensus)), vector.end());
+											// if we still didn't reach concensus, we increase the counter and save again.
+											if (std::stoi(adminConsensus.at(2)) < 3){
+												adminConsensus.at(2) = std::stoi(adminConsensus.at(2)) + 1;
+												adminConsensus.push_back(pkey);
+												vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
+											}
 											minerwhitelistdb.Write(vector);
 											LogPrint("MinerWhiteListTransaction", "Miner address removed: %s \n", address.ToString());
 										}
