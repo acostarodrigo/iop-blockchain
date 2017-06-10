@@ -91,7 +91,7 @@ bool fIsBareMultisigStd = DEFAULT_PERMIT_BAREMULTISIG;
 bool fRequireStandard = true;
 bool fCheckBlockIndex = false;
 /* IoP beta release - flag that determines if the Miner white list functionality is activated or not. */
-bool fIsMinerWhiteList = true;
+bool fIsMinerWhiteList = false;
 bool fCheckpointsEnabled = DEFAULT_CHECKPOINTS_ENABLED;
 size_t nCoinCacheUsage = 5000 * 300;
 uint64_t nPruneTarget = 0;
@@ -2752,6 +2752,16 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     static uint256 hashPrevBestCoinBase;
     GetMainSignals().UpdatedTransaction(hashPrevBestCoinBase);
     hashPrevBestCoinBase = block.vtx[0].GetHash();
+
+    /* IoP beta release - added window activation for WhiteList control */
+    int minerWhiteListActivationHeight = Params().GetConsensus().minerWhiteListActivationHeight;
+    if (pindex->nHeight > minerWhiteListActivationHeight){
+	LogPrint("MinersWhiteList", "Miners white list control activated.\n");
+		fIsMinerWhiteList = true;
+	} else {
+		LogPrint("MinersWhiteList", "Miners white list control deactivated.\n");
+		fIsMinerWhiteList = false;
+	}
 
 
     /* IoP beta release - we track non cb transaction to identify transactions that add or remove miner addresses into the blockchain */
