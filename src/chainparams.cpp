@@ -105,6 +105,7 @@ public:
         consensus.minerWhiteListAdminPubKey.insert("038f21c88b0d7f60e736cc447a3a6716c81a7b403b27bede2b67522d7c29b6e608"); //pub key required to sign add / remove transactions
         consensus.minerWhiteListAdminAddress.insert("pUSydiLr9kFjtL7VbtfMYXMz7GLV413coQ"); //default miner address
         consensus.minerWhiteListAdminAddress.insert("pGNcLNCavQLGXwXkVDwoHPCuQUBoXzJtPh"); //default miner address
+        consensus.minerWhiteListMinAdminConsensus = 3; // 3 admin must generate transaction to add or remove miners
         consensus.minerCapSystemChangeHeight = 40320;
         // Voting System Params
         consensus.ccBlockStartAdditionalHeight = 1000;
@@ -208,7 +209,8 @@ public:
 		consensus.minerWhiteListActivationHeight = 110; //block height that activates the white list.
 		consensus.minerWhiteListAdminPubKey.insert("03f331bdfe024cf106fa1dcedb8b78e084480fa665d91c50b61822d7830c9ea840"); //pub key required to sign add / remove transactions
 		consensus.minerWhiteListAdminAddress.insert("uh2SKjE6R1uw3b5smZ8i1G8rDoQv458Lsj"); //default miner address
-    consensus.minerCapSystemChangeHeight=7800;
+		consensus.minerWhiteListMinAdminConsensus = 3; // 3 admin must generate transaction to add or remove miners
+		consensus.minerCapSystemChangeHeight=7800;
 		// Voting System Params
 		consensus.ccBlockStartAdditionalHeight = 10;
 
@@ -294,7 +296,8 @@ public:
 		consensus.minerWhiteListActivationHeight = 5000; //block height that activates the white list.
 		consensus.minerWhiteListAdminPubKey.insert("03760087582c5e225aea2a6781f4df8b12d7124e4f039fbd3e6d053fdcaacc60eb"); //pub key required to sign add / remove transactions
 		consensus.minerWhiteListAdminAddress.insert("ucNbB1K3BaHWY5tXrWiyWn11QB51vPDuVE"); //default miner address
-    consensus.minerCapSystemChangeHeight = 5200;
+		consensus.minerWhiteListMinAdminConsensus = 1; // 1 admin must generate transaction to add or remove miners
+		consensus.minerCapSystemChangeHeight = 5200;
 		// Voting System Params
 		consensus.ccBlockStartAdditionalHeight = 10;
 

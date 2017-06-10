@@ -67,6 +67,8 @@ struct Params {
 
     /* IoP beta release - Miner White List params */
     int minerWhiteListActivationHeight;
+    // minimum amount of admin transactions to aprove a miner in the whitelist database
+    int minerWhiteListMinAdminConsensus;
     std::set<std::string> minerWhiteListAdminPubKey;
     std::set<std::string> minerWhiteListAdminAddress;
     int minerCapSystemChangeHeight;

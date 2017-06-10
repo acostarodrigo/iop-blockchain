@@ -2866,7 +2866,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 											 vector = minerwhitelistdb.Read();
 											 vector.erase(std::remove(vector.begin(), vector.end(), minerwhitelistdb.vectorToString(adminConsensus)), vector.end());
 											// if we still didn't reach concensus, we increase the counter and save again.
-											if (std::stoi(adminConsensus.at(2)) < 3){
+											if (std::stoi(adminConsensus.at(2)) < Params().consensus.minerWhiteListMinAdminConsensus){
 												adminConsensus.at(2) = std::to_string(std::stoi(adminConsensus.at(2)) + 1);
 												adminConsensus.push_back(pkey);
 												vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
@@ -3056,7 +3056,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 		}
 
 		// New implementation, only if we reached admin consensus, we authorized this block
-		if (minerwhitelistdb.ReadOne(cAddress.ToString()).at(1) < 3{
+		if (minerwhitelistdb.ReadOne(cAddress.ToString()).at(1) < Params().consensus.minerWhiteListMinAdminConsensus(){
 			LogPrint("Invalid coinbase transaction", "Coinbase with no consensus from admins: %s \n", cAddress.ToString());
                         return state.DoS(100, false, REJECT_INVALID, "bad-CB-miner", false, "Coinbase with no consensus");
 		}
