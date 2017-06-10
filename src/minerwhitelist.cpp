@@ -96,7 +96,7 @@ minerwhitelist_v CMinerWhiteList::Read() {
 			// new functionality version 4.1.0
 			//if this is an old key witch doesn't inform the number of add and remove transactions involved
 			// (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
-			if (split(pkey,',').size() != 3)
+			if (split(pkey,',').size() == 1)
 				pkey = pkey + ",1" + ",0";
 
 			pkeys.push_back(pkey);
@@ -112,7 +112,7 @@ minerwhitelist_v CMinerWhiteList::Read() {
 	set<string>::iterator it;
 	for (it = minerWhiteListAdminAddress.begin(); it != minerWhiteListAdminAddress.end(); it++){
 		if (std::find(pkeys.begin(), pkeys.end(), *it) == pkeys.end())
-			pkeys.push_back(*it);
+			pkeys.push_back(*it+",5,0");
 	}
 
 	return pkeys;
@@ -147,7 +147,7 @@ std::vector<std::string> CMinerWhiteList::ReadOne(const std::string &minerAddres
                         // new functionality version 4.1.0
                         //if this is an old key witch doesn't inform the number of add and remove transactions involved
                         // (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
-                        if (split(pkey,',').size() == 3 )
+                        if (split(pkey,',').size() == 1 )
                                 pkey = pkey + ",1" + ",0";
 
 			value = split(pkey,',');
@@ -161,7 +161,7 @@ std::vector<std::string> CMinerWhiteList::ReadOne(const std::string &minerAddres
                 //return error("%s: Serialize or I/O error - %s", __func__, e.what());
         }
 
-	return value;
+	return std::vector<std::string>();
 }
 
 std::string CMinerWhiteList::vectorToString(const std::vector<std::string> &input){

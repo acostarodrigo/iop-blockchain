@@ -2844,12 +2844,17 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 											adminConsensus.push_back(address.ToString());
 											adminConsensus.push_back("1");
 											adminConsensus.push_back("0");
-										} else // if a previous exists, I will increase the counter
-											adminConsensus.at(1) = std::stoi(adminConsensus.at(1)) + 1;
+										} else {// if a previous exists, I will increase the counter
+											LogPrint("MinerWhiteistTransaction", "miner address previously exists, with counter at:%s",std::stoi(adminConsensus.at(1)) );
+											adminConsensus.at(1) = std::to_string(std::stoi(adminConsensus.at(1)) + 1);
+											
+										}
 										// then will track this public key
 										adminConsensus.push_back(pkey);
 
 										//create function that will generate string from vector and add it.
+										//delete any  entry from this miner
+										vector.erase(std::find(vector.begin(), vector.end(), address.ToString()), vector.end());
 										vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
 
 										minerwhitelistdb.Write(vector);
@@ -2866,7 +2871,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 											 vector.erase(std::remove(vector.begin(), vector.end(), minerwhitelistdb.vectorToString(adminConsensus)), vector.end());
 											// if we still didn't reach concensus, we increase the counter and save again.
 											if (std::stoi(adminConsensus.at(2)) < 3){
-												adminConsensus.at(2) = std::stoi(adminConsensus.at(2)) + 1;
+												adminConsensus.at(2) = std::to_string(std::stoi(adminConsensus.at(2)) + 1);
 												adminConsensus.push_back(pkey);
 												vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
 											}
