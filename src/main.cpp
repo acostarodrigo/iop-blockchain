@@ -2845,16 +2845,16 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 											adminConsensus.push_back("1");
 											adminConsensus.push_back("0");
 										} else {// if a previous exists, I will increase the counter
+											vector.erase(std::remove(vector.begin(), vector.end(), minerwhitelistdb.vectorToString(adminConsensus)), vector.end());
 											LogPrint("MinerWhiteistTransaction", "miner address previously exists, with counter at:%s",std::stoi(adminConsensus.at(1)) );
 											adminConsensus.at(1) = std::to_string(std::stoi(adminConsensus.at(1)) + 1);
-											
 										}
 										// then will track this public key
 										adminConsensus.push_back(pkey);
 
 										//create function that will generate string from vector and add it.
 										//delete any  entry from this miner
-										vector.erase(std::find(vector.begin(), vector.end(), address.ToString()), vector.end());
+										//vector.erase(std::remove(vector.begin(), vector.end(), address.ToString()), vector.end());
 										vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
 
 										minerwhitelistdb.Write(vector);

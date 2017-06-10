@@ -96,7 +96,7 @@ minerwhitelist_v CMinerWhiteList::Read() {
 			// new functionality version 4.1.0
 			//if this is an old key witch doesn't inform the number of add and remove transactions involved
 			// (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
-			if (split(pkey,',').size() == 1)
+			if (split(pkey,',').size() == 1 && pkey.find("enable") != 0)
 				pkey = pkey + ",1" + ",0";
 
 			pkeys.push_back(pkey);
