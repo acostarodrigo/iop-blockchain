@@ -2859,7 +2859,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 									case CMinerWhiteList::REMOVE_MINER:
 										// will remove the address only if is not the admin.
 										if (!Params().GetConsensus().minerWhiteListAdminAddress.count(address.ToString())){
-
 											// we can't allow an admin to post more than one transaction for this address
 											if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
 												break;
@@ -3061,10 +3060,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 		}
 
 		// New implementation, only if we reached admin consensus, we authorized this block		
-		if (std::stoi(minerwhitelistdb.ReadOne(cAddress.ToString()).at(1)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
-			LogPrint("Invalid coinbase transaction", "Coinbase with no consensus from admins: %s \n", cAddress.ToString());
-			return state.DoS(100, false, REJECT_INVALID, "bad-CB-miner", false, "Coinbase with no consensus");
-		}
+		//if (std::stoi(minerwhitelistdb.ReadOne(cAddress.ToString()).at(1)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
+		//	LogPrint("Invalid coinbase transaction", "Coinbase with no consensus from admins: %s \n", cAddress.ToString());
+		//	return state.DoS(100, false, REJECT_INVALID, "bad-CB-miner", false, "Coinbase with no consensus");
+		//}
 		
 
 
