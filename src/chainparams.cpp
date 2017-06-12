@@ -214,8 +214,16 @@ public:
 
         // Miner White list params
 		consensus.minerWhiteListActivationHeight = 110; //block height that activates the white list.
-		consensus.minerWhiteListAdminPubKey.insert("03f331bdfe024cf106fa1dcedb8b78e084480fa665d91c50b61822d7830c9ea840"); //pub key required to sign add / remove transactions
-		consensus.minerWhiteListAdminAddress.insert("uh2SKjE6R1uw3b5smZ8i1G8rDoQv458Lsj"); //default miner address
+		consensus.minerWhiteListAdminPubKey.insert("03f331bdfe024cf106fa1dcedb8b78e084480fa665d91c50b61822d7830c9ea840"); //admin 1
+		consensus.minerWhiteListAdminPubKey.insert("036144b1fd268a585380ac254df1819fdc369ecb5a73ba26960f13b0839124297f"); //admin 2
+		consensus.minerWhiteListAdminPubKey.insert("033888a31bd3bfde32acf4a8f9f6c214b3c18b0144246bf4d2efd4a4a85bf19302"); //admin 3
+		consensus.minerWhiteListAdminPubKey.insert("032c4f9d3bf27d2488e5c60c0285fc3ae983df56b554dc72044f07679291852e22"); //admin 4
+		consensus.minerWhiteListAdminPubKey.insert("02d442d291a80da908cd8b349414f723d0ca539b9d306f68a3b0ce96e7747ff2ba"); //admin 5
+		consensus.minerWhiteListAdminAddress.insert("uh2SKjE6R1uw3b5smZ8i1G8rDoQv458Lsj"); //admin 1
+		consensus.minerWhiteListAdminAddress.insert("uWRctToxeWVQrDp7cf8d9S6WsShPEqZYi5"); //admin 2
+		consensus.minerWhiteListAdminAddress.insert("uawKNKdCq8nMzHubWMd4mUZUEE8nXRuxmR"); //admin 3
+		consensus.minerWhiteListAdminAddress.insert("udnHN51uCoNYJuveLFFweTCArWJq1Ajb4c"); //admin 4
+		consensus.minerWhiteListAdminAddress.insert("uTUusyZae9W1AC7XeBdCj7aURsetYUwfQ3"); //admin 5
 		consensus.minerWhiteListMinAdminConsensus = 3; // 3 admin must generate transaction to add or remove miners
 		consensus.minerCapSystemChangeHeight=7800;
 		// Voting System Params
