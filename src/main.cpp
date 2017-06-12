@@ -2833,10 +2833,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 								switch(action)
 								{
 									case CMinerWhiteList::ADD_MINER:
-										// we can't allow an admin to post more than one transaction for this address
-										if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
-											break;
-
 										vector = minerwhitelistdb.Read();
 
 										//If this is the first transaction to add it, will generate the structure
@@ -2845,8 +2841,18 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 											adminConsensus.push_back("1");
 											adminConsensus.push_back("0");
 										} else {// if a previous exists, I will increase the counter
+											// if the admin already voted, we are only allowing to change the vote if there are more negative votes than posivite
+											if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end()){
+												// we can only let him change his mind if there are more negative votes than positive for this address
+												if (std::stoi(adminConsensus.at(1)) > std::stoi(adminConsensus.at(2)))
+													break;
+												else
+													adminConsensus.at(2) = std::to_string(std::stoi(adminConsensus.at(2)) - 1);
+											}
+
 											vector.erase(std::remove(vector.begin(), vector.end(), minerwhitelistdb.vectorToString(adminConsensus)), vector.end());	
 											adminConsensus.at(1) = std::to_string(std::stoi(adminConsensus.at(1)) + 1);
+
 										}
 										// then will track this public key
 										adminConsensus.push_back(pkey);
@@ -2859,16 +2865,23 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 									case CMinerWhiteList::REMOVE_MINER:
 										// will remove the address only if is not the admin.
 										if (!Params().GetConsensus().minerWhiteListAdminAddress.count(address.ToString())){
-											// we can't allow an admin to post more than one transaction for this address
-											if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
-												break;
 
 											// if I didn't find a previous entry, then nothing to be done!
 											if (adminConsensus.size() == 0)
 												break;
+
 											// lets load the list
 											 vector = minerwhitelistdb.Read();
 											 vector.erase(std::remove(vector.begin(), vector.end(), minerwhitelistdb.vectorToString(adminConsensus)), vector.end());
+
+											 // if this admin already voted, we only allow change the vote if there are more positive votes than negative
+											if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end()){
+												if (std::stoi(adminConsensus.at(1)) < std::stoi(adminConsensus.at(2)))
+													break;
+												else
+													adminConsensus.at(1) = std::to_string(std::stoi(adminConsensus.at(1)) - 1);
+											}
+
 											// if we still didn't reach concensus, we increase the counter and save again.
 											if (std::stoi(adminConsensus.at(2)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
 												adminConsensus.at(2) = std::to_string(std::stoi(adminConsensus.at(2)) + 1);
