@@ -101,10 +101,17 @@ public:
 
         // Miner White list params
         consensus.minerWhiteListActivationHeight = 110; //block height that activates the white list.
-        consensus.minerWhiteListAdminPubKey.insert("03902b311c298f7d32eb2ccb71abde7afd39745f505e6e677cabc3964eea7960dc"); //pub key required to sign add / remove transactions
-        consensus.minerWhiteListAdminPubKey.insert("038f21c88b0d7f60e736cc447a3a6716c81a7b403b27bede2b67522d7c29b6e608"); //pub key required to sign add / remove transactions
-        consensus.minerWhiteListAdminAddress.insert("pUSydiLr9kFjtL7VbtfMYXMz7GLV413coQ"); //default miner address
-        consensus.minerWhiteListAdminAddress.insert("pGNcLNCavQLGXwXkVDwoHPCuQUBoXzJtPh"); //default miner address
+        consensus.minerWhiteListAdminPubKey.insert("03902b311c298f7d32eb2ccb71abde7afd39745f505e6e677cabc3964eea7960dc"); //Markus
+        consensus.minerWhiteListAdminPubKey.insert("038f21c88b0d7f60e736cc447a3a6716c81a7b403b27bede2b67522d7c29b6e608"); //Rodrigo
+        consensus.minerWhiteListAdminPubKey.insert("02ffc2c8d14db4644b30d061803998621d7cc8903da1c166d382ac033bf5972bc9"); //David
+        consensus.minerWhiteListAdminPubKey.insert("03dfe647225b43395a94441fa20c75fdb644441d5115da26ef0da4f680acd28a28"); //Luis
+        consensus.minerWhiteListAdminPubKey.insert("035344b025a91c24b47831919923a57e8db3e30f85b64d4fbf60ae8a6ffe4606c7"); //Guillermo
+
+        consensus.minerWhiteListAdminAddress.insert("pUSydiLr9kFjtL7VbtfMYXMz7GLV413coQ"); //Markus
+        consensus.minerWhiteListAdminAddress.insert("pGNcLNCavQLGXwXkVDwoHPCuQUBoXzJtPh"); //Rodrigo
+        consensus.minerWhiteListAdminAddress.insert("pEppLTPsCKc978Dupb8vo5NXuCc3z1r6C7"); //David
+        consensus.minerWhiteListAdminAddress.insert("pK2JKbgaqUNq2SyVcrB7H7wo4S8YJKsLyz"); //Luis
+        consensus.minerWhiteListAdminAddress.insert("pJAKv7ii6MmyWL9ovVByVsq25HbPwoRiuW"); //Guillermo
         consensus.minerWhiteListMinAdminConsensus = 3; // 3 admin must generate transaction to add or remove miners
         consensus.minerCapSystemChangeHeight = 40320;
         // Voting System Params
