@@ -2828,15 +2828,15 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
 							if (address.IsValid()){
 								// the operation is valid. Lets retrieve information of previous transaction for this address
-								std::vector<std::string> adminConsensus = minerwhitelistdb.ReadOne(address.ToString());	
-
-								// we can't allow an admin to post more than one transaction for this address
-								if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
-									break;
+								std::vector<std::string> adminConsensus = minerwhitelistdb.ReadOne(address.ToString());
 
 								switch(action)
 								{
 									case CMinerWhiteList::ADD_MINER:
+										// we can't allow an admin to post more than one transaction for this address
+										if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
+											break;
+
 										vector = minerwhitelistdb.Read();
 
 										//If this is the first transaction to add it, will generate the structure
@@ -2859,6 +2859,11 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 									case CMinerWhiteList::REMOVE_MINER:
 										// will remove the address only if is not the admin.
 										if (!Params().GetConsensus().minerWhiteListAdminAddress.count(address.ToString())){
+
+											// we can't allow an admin to post more than one transaction for this address
+											if (std::find(adminConsensus.begin(), adminConsensus.end(), pkey) != adminConsensus.end())
+												break;
+
 											// if I didn't find a previous entry, then nothing to be done!
 											if (adminConsensus.size() == 0)
 												break;
