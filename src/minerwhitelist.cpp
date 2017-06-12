@@ -96,8 +96,8 @@ minerwhitelist_v CMinerWhiteList::Read() {
 			// new functionality version 4.1.0
 			//if this is an old key witch doesn't inform the number of add and remove transactions involved
 			// (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
-			if (split(pkey,',').size() == 1 && pkey.find("enable") != 0)
-				pkey = pkey + ",3" + ",0";
+			if (split(pkey,',').size() == 1 && pkey.find("enabled") != 0)
+				pkey = pkey + ",1" + ",0";
 
 			pkeys.push_back(pkey);
 		}
@@ -120,10 +120,12 @@ minerwhitelist_v CMinerWhiteList::Read() {
 
 
 bool CMinerWhiteList::Exist(std::string pkey){
-	std::vector<string> pkeys;
-	pkeys = Read();
-
-    return (std::find(pkeys.begin(), pkeys.end(), pkey) != pkeys.end());
+	std::vector<string> pkeys = Read();
+	for (int i= 0; i < pkeys.size(); i++){
+		if (split(pkeys[i], ',').at(0).compare(pkey)==0)
+			return true;
+	}
+	 return false;
 }
 
 /**
@@ -148,7 +150,7 @@ std::vector<std::string> CMinerWhiteList::ReadOne(const std::string &minerAddres
                         //if this is an old key witch doesn't inform the number of add and remove transactions involved
                         // (form should be [address],[#add],[#remove], then we reset it with 1 positive vote.
                         if (split(pkey,',').size() == 1 )
-                                pkey = pkey + ",3" + ",0";
+                                pkey = pkey + ",1" + ",0";
 
 			value = split(pkey,',');
                         if (value.at(0).compare(minerAddress) == 0){
