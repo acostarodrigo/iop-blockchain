@@ -2883,7 +2883,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 											}
 
 											// if we still didn't reach concensus, we increase the counter and save again.
-											if (std::stoi(adminConsensus.at(2)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
+											if (std::stoi(adminConsensus.at(2)) < Params().GetConsensus().minerWhiteListMinAdminConsensus -1){
 												adminConsensus.at(2) = std::to_string(std::stoi(adminConsensus.at(2)) + 1);
 												adminConsensus.push_back(pkey);
 												vector.push_back(minerwhitelistdb.vectorToString(adminConsensus));
