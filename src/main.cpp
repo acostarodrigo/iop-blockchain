@@ -3073,7 +3073,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 		}
 
 		
-		if (chainActive.Height() => Params().GetConsensus().minerWhiteListMinAdminConsensusActivationHeight){
+		if (chainActive.Height() >= Params().GetConsensus().minerWhiteListMinAdminConsensusActivationHeight){
 			// New implementation, only if we reached admin consensus, we authorized this block
 			if (std::stoi(minerwhitelistdb.ReadOne(cAddress.ToString()).at(1)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
 				LogPrint("Invalid coinbase transaction", "Coinbase with no consensus from admins: %s \n", cAddress.ToString());
