@@ -3072,12 +3072,16 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 			return state.DoS(100, false, REJECT_INVALID, "bad-CB-miner", false, "Coinbase not authorized");
 		}
 
-		// New implementation, only if we reached admin consensus, we authorized this block		
-		//if (std::stoi(minerwhitelistdb.ReadOne(cAddress.ToString()).at(1)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
-		//	LogPrint("Invalid coinbase transaction", "Coinbase with no consensus from admins: %s \n", cAddress.ToString());
-		//	return state.DoS(100, false, REJECT_INVALID, "bad-CB-miner", false, "Coinbase with no consensus");
-		//}
 		
+		if (chainActive.Height() => Params().GetConsensus().minerWhiteListMinAdminConsensusActivationHeight){
+			// New implementation, only if we reached admin consensus, we authorized this block
+			if (std::stoi(minerwhitelistdb.ReadOne(cAddress.ToString()).at(1)) < Params().GetConsensus().minerWhiteListMinAdminConsensus){
+				LogPrint("Invalid coinbase transaction", "Coinbase with no consensus from admins: %s \n", cAddress.ToString());
+				return state.DoS(100, false, REJECT_INVALID, "bad-CB-miner", false, "Coinbase with no consensus");
+			}
+		}
+
+
 
 
 		// If the cap is active, we will validate the stats

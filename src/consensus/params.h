@@ -69,6 +69,8 @@ struct Params {
     int minerWhiteListActivationHeight;
     // minimum amount of admin transactions to aprove a miner in the whitelist database
     int minerWhiteListMinAdminConsensus;
+    int minerWhiteListMinAdminConsensusActivationHeight;
+
     std::set<std::string> minerWhiteListAdminPubKey;
     std::set<std::string> minerWhiteListAdminAddress;
     int minerCapSystemChangeHeight;

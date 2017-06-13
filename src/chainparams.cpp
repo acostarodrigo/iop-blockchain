@@ -113,6 +113,8 @@ public:
         consensus.minerWhiteListAdminAddress.insert("pK2JKbgaqUNq2SyVcrB7H7wo4S8YJKsLyz"); //Luis
         consensus.minerWhiteListAdminAddress.insert("pJAKv7ii6MmyWL9ovVByVsq25HbPwoRiuW"); //Guillermo
         consensus.minerWhiteListMinAdminConsensus = 3; // 3 admin must generate transaction to add or remove miners
+        consensus.minerWhiteListMinAdminConsensusActivationHeight = 45000;
+
         consensus.minerCapSystemChangeHeight = 40320;
         // Voting System Params
         consensus.ccBlockStartAdditionalHeight = 1000;
@@ -225,6 +227,8 @@ public:
 		consensus.minerWhiteListAdminAddress.insert("udnHN51uCoNYJuveLFFweTCArWJq1Ajb4c"); //admin 4
 		consensus.minerWhiteListAdminAddress.insert("uTUusyZae9W1AC7XeBdCj7aURsetYUwfQ3"); //admin 5
 		consensus.minerWhiteListMinAdminConsensus = 3; // 3 admin must generate transaction to add or remove miners
+		consensus.minerWhiteListMinAdminConsensusActivationHeight = 9000;
+
 		consensus.minerCapSystemChangeHeight=7800;
 		// Voting System Params
 		consensus.ccBlockStartAdditionalHeight = 10;
@@ -316,6 +320,8 @@ public:
 		consensus.minerWhiteListAdminAddress.insert("uR9oF2hoCyTtxE9YqjcNMuggJFWKxQYo4M"); //admin 2
 		consensus.minerWhiteListAdminAddress.insert("ud2yj4ncSAjaCfEV37PXSReLpfAn8LBWd2"); //admin 3
 		consensus.minerWhiteListMinAdminConsensus = 2; // 1 admin must generate transaction to add or remove miners
+		consensus.minerWhiteListMinAdminConsensusActivationHeight = 5500;
+
 		consensus.minerCapSystemChangeHeight = 5200;
 		// Voting System Params
 		consensus.ccBlockStartAdditionalHeight = 10;
