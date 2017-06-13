@@ -149,3 +149,9 @@ Improvements
 Improvements 
  
 * Quick fix of the mining thread. CCs still need refactoring
+
+## version 5.0.2
+ 
+Improvements 
+ 
+* Changed the way mining licenses are administered. Every Add or Remove operation needs consensus of admins. New admins added, and three transactions must be recorded for license changes to take effect.
